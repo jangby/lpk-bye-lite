@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #fff; color: #1b2633; font-family: "Plus Jakarta Sans", sans-serif; }
+* { box-sizing: border-box; }
+
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-[1200px] px-5 md:px-8; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-wine-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-wine-700 disabled:cursor-not-allowed disabled:opacity-60; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-navy transition hover:border-wine-600 hover:text-wine-600; }
+  .input-field { @apply mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-wine-500 focus:ring-4 focus:ring-wine-100; }
+  .section-title { @apply font-display text-3xl font-semibold leading-tight text-navy md:text-[42px]; }
+  .card { @apply rounded-2xl border border-slate-100 bg-white shadow-card; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600; }
+}
+
+.mobile-card-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-card-track::-webkit-scrollbar {
+  display: none;
+}
