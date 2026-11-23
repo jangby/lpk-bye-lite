@@ -196,7 +196,7 @@ export default function AdminSiteContent() {
           </article>)}
         </div> : <EmptyState title="Belum ada FAQ" text="Tambahkan jawaban untuk pertanyaan yang sering disampaikan calon peserta." action="Tambah FAQ" onAction={() => setFaqEditor({})}/>}
       </section> : <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_1.2fr]">
-        <div className="card flex min-h-64 flex-col items-center justify-center bg-[#fbfaf7] p-8 text-center">
+        <div className="card flex min-h-64 flex-col items-center justify-center bg-cream p-8 text-center">
           {content.logo_url
             ? <img src={assetUrl(content.logo_url)} alt="Logo LPK BYE saat ini" className="max-h-28 max-w-full object-contain"/>
             : <DefaultMark/>}
@@ -234,7 +234,7 @@ function LogoForm({ file, onFileChange, onSubmit, saving }) {
       <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => onFileChange(event.target.files?.[0] || null)}/>
       {preview ? <img src={preview} alt="Pratinjau logo baru" className="max-h-20 max-w-full object-contain"/> : <Upload className="text-wine-600"/>}
       <span className="mt-3 text-sm font-semibold text-navy">{file?.name || 'Klik untuk memilih gambar logo'}</span>
-      <span className="mt-1 text-xs text-slate-400">JPG, PNG, atau WEBP · maksimal 2,5 MB</span>
+      <span className="mt-1 text-xs text-slate-400">JPG, PNG, atau WEBP · maksimal 5 MB</span>
     </label>
     <button type="submit" disabled={!file || saving} className="btn-primary mt-4 w-full">{saving ? <LoaderCircle size={16} className="animate-spin"/> : <Save size={16}/>}Simpan logo</button>
   </form>;
@@ -291,7 +291,7 @@ function SlideEditor({ slide, onClose, onSaved }) {
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <label className="block text-sm font-semibold text-navy">Gambar poster {!slide && <span className="text-wine-600">*</span>}
         <input required={!slide} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] || null)} className="mt-2 block w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-wine-50 file:px-3 file:py-2 file:font-semibold file:text-wine-700"/>
-        <span className="mt-1 block text-xs font-normal text-slate-400">Rasio landscape 16:9 disarankan · JPG, PNG, WEBP · maks. 2,5 MB</span>
+        <span className="mt-1 block text-xs font-normal text-slate-400">Rasio landscape 16:9 disarankan · JPG, PNG, WEBP · maks. 5 MB</span>
       </label>
       {preview && <img src={preview} alt="Pratinjau poster" className="max-h-48 w-full rounded-xl bg-slate-100 object-cover"/>}
       <label className="block text-sm font-semibold text-navy">Judul poster<input maxLength={180} className="input-field" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Contoh: Gelombang baru telah dibuka"/></label>
@@ -356,7 +356,7 @@ function GalleryEditor({ item, onClose, onSaved }) {
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <label className="block text-sm font-semibold text-navy">Foto kegiatan {!item && <span className="text-wine-600">*</span>}
         <input required={!item} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] || null)} className="mt-2 block w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-wine-50 file:px-3 file:py-2 file:font-semibold file:text-wine-700"/>
-        <span className="mt-1 block text-xs font-normal text-slate-400">JPG, PNG, atau WEBP · maks. 2,5 MB</span>
+        <span className="mt-1 block text-xs font-normal text-slate-400">JPG, PNG, atau WEBP · maks. 5 MB</span>
       </label>
       {preview && <img src={preview} alt="Pratinjau foto galeri" className="max-h-64 w-full rounded-xl bg-slate-100 object-cover"/>}
       <label className="block text-sm font-semibold text-navy">Judul foto<input maxLength={180} className="input-field" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Contoh: Suasana kelas Bahasa Jepang"/></label>

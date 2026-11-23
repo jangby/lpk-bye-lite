@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Check, ChevronDown, CircleDollarSign, ClipboardList, GraduationCap, ImagePlus, Menu, MessageCircle, ShieldCheck, Users } from 'lucide-react';
 import { adminRequest, getBatches, getContent, getPortal, login, register, submitPayment } from './api';
+import { getUploadSizeLimit, getUploadSizeMessage } from '../lib/upload.js';
 import AIChatWidget from './AIChatWidget.jsx';
+import AnalyticsTracker from './AnalyticsTracker.jsx';
 import Landing from './Landing.jsx';
 import RegistrationPage from './Registration.jsx';
 import ParticipantPortal from './ParticipantPortal.jsx';
@@ -13,13 +15,16 @@ const date = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString
 const statusNames = { pending: 'Menunggu verifikasi', verified: 'Terverifikasi', accepted: 'Diterima', rejected: 'Ditolak' };
 
 export default function App() {
-  return <Routes>
-    <Route path="/" element={<Landing />} />
-    <Route path="/pendaftaran" element={<RegistrationPage />} />
-    <Route path="/peserta/:token" element={<ParticipantPortal />} />
-    <Route path="/admin/*" element={<AdminPage />} />
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>;
+  return <>
+    <AnalyticsTracker/>
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/pendaftaran" element={<RegistrationPage />} />
+      <Route path="/peserta/:token" element={<ParticipantPortal />} />
+      <Route path="/admin/*" element={<AdminPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </>;
 }
 
 function Brand({ light = false, logoUrl = null }) {
@@ -118,7 +123,7 @@ function DynamicField({ field, value, onChange }) {
       <input required={Boolean(field.is_required)} type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" onChange={async (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        if (file.size > 2.5 * 1024 * 1024) { onChange({ error: 'Ukuran berkas maksimal 2,5 MB.' }); return; }
+        if (file.size > getUploadSizeLimit(file)) { onChange({ error: getUploadSizeMessage(file) }); return; }
         try {
           const base64 = await fileToBase64(file);
           onChange({ name: file.name, mimeType: file.type, base64 });
@@ -167,7 +172,7 @@ function Participant() {
   async function selectReceipt(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.size > 2.5 * 1024 * 1024) { setPaymentError('Ukuran bukti maksimal 2,5 MB.'); return; }
+    if (file.size > getUploadSizeLimit(file)) { setPaymentError(getUploadSizeMessage(file)); return; }
     setReceipt({ name: file.name, mimeType: file.type, base64: await fileToBase64(file) });
   }
   return <div className="portal-page"><Brand/><Link to="/" className="back-link">← Beranda</Link>{error ? <div className="empty-card"><h2>Tautan tidak tersedia</h2><p>{error}</p></div> : !data ? <p className="muted">Memuat portal peserta…</p> : <section className="portal-card"><p className="eyebrow">PORTAL PESERTA</p><h1>Halo, {data.participant.full_name}.</h1><p className="muted">Berikut informasi pendaftaranmu.</p><div className="portal-status"><span>Status pendaftaran</span><b className={`status status-${data.participant.status}`}>{statusNames[data.participant.status] || data.participant.status}</b></div><div className="portal-row"><span>Kode pendaftaran</span><b>{data.participant.registration_code}</b></div><div className="portal-row"><span>Program</span><b>{data.training.program_type}</b></div><div className="portal-row"><span>Gelombang</span><b>{data.training.batch_name}</b></div>{data.participant.feedback && <p className="notice">{data.participant.feedback}</p>}
@@ -420,7 +425,7 @@ function ContentManager() {
   async function filePayload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.size > 2.5 * 1024 * 1024) { setError('Ukuran gambar maksimal 2,5 MB.'); return; }
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) { setError('Ukuran gambar maksimal 5 MB.'); return; }
     setDraft({ ...draft, image_file: { name: file.name, mimeType: file.type, base64: await fileToBase64(file) } });
   }
 

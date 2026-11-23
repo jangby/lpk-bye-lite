@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, CalendarDays, Check, ChevronRight, CircleDollarSign, ClipboardList, Eye, EyeOff,
+  ArrowLeft, ArrowRight, BarChart3, CalendarDays, Check, ChevronRight, CircleDollarSign, ClipboardList, Eye, EyeOff,
   FileText, ImagePlus, LayoutDashboard, Layers3, LogOut, Menu, Pencil, Plus, Search, ShieldCheck,
   MessageCircle, Trash2, UserRound, Users, X
 } from 'lucide-react';
 import { adminApi, loginAdmin } from './api.js';
 import { Logo } from './Landing.jsx';
+import AdminAnalytics from './AdminAnalytics.jsx';
 import AdminSiteContent from './AdminSiteContent.jsx';
 
 const statusStyle = {
@@ -56,7 +57,7 @@ function AdminLogin() {
     } catch (e) { setError(e.message); } finally { setLoading(false); }
   }
 
-  return <div className="grid min-h-screen bg-[#fbfaf7] lg:grid-cols-2">
+  return <div className="grid min-h-screen bg-cream lg:grid-cols-2">
     <div className="hidden bg-wine-700 px-12 py-10 text-white lg:flex lg:flex-col">
       <Logo light/><div className="my-auto max-w-xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-white/50">Ruang administrasi LPK BYE</p><h1 className="mt-6 font-display text-5xl font-semibold leading-tight">Di balik setiap langkah, ada pendampingan yang baik.</h1><p className="mt-6 max-w-md leading-7 text-white/70">Kelola gelombang, susun formulir, dan dampingi proses pendaftaran peserta dalam satu ruang kerja.</p><img className="mt-10 h-72 w-full rounded-2xl object-cover" src="https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=900&q=85" alt="Meja administrasi"/></div><p className="text-xs text-white/40">LPK BYE · Bahasa, budaya, masa depan.</p>
     </div>
@@ -72,6 +73,7 @@ function AdminShell() {
   const admin = JSON.parse(localStorage.getItem('lpk_admin') || '{"name":"Administrator LPK BYE","role":"super_admin"}');
   const links = [
     ['/admin/dashboard','Dashboard',LayoutDashboard],
+    ['/admin/analytics','Analitik website',BarChart3],
     ['/admin/batches','Gelombang',Layers3],
     ['/admin/site-content','Konten landing',ImagePlus],
     ['/admin/form-builder','Form Builder',ClipboardList],
@@ -117,7 +119,7 @@ function AdminShell() {
         <div className="min-w-0 flex-1 truncate px-3 text-xs text-slate-400 md:px-5">LPK BYE <ChevronRight className="inline" size={12}/> {links.find(([p]) => location.pathname.startsWith(p))?.[1] || 'Administrasi'}</div>
         <div className="flex shrink-0 items-center gap-3 text-right"><div><p className="max-w-36 truncate text-xs font-bold text-navy">{admin.name}</p><p className="text-[10px] capitalize text-slate-400">{admin.role?.replace('_',' ')}</p></div><div className="grid h-9 w-9 place-items-center rounded-full bg-wine-50 text-xs font-bold text-wine-700">AD</div></div>
       </header>
-      <main className="p-5 md:p-8"><Routes><Route path="dashboard" element={<Dashboard/>}/><Route path="batches" element={<Batches/>}/><Route path="site-content" element={<AdminSiteContent/>}/><Route path="form-builder" element={<FormBuilder/>}/><Route path="registrants" element={<Registrants/>}/><Route path="registrants/:id" element={<RegistrantDetail/>}/><Route path="payments" element={<Payments/>}/><Route path="*" element={<Navigate to="/admin/dashboard" replace/>}/></Routes></main>
+      <main className="p-5 md:p-8"><Routes><Route path="dashboard" element={<Dashboard/>}/><Route path="analytics" element={<AdminAnalytics/>}/><Route path="batches" element={<Batches/>}/><Route path="site-content" element={<AdminSiteContent/>}/><Route path="form-builder" element={<FormBuilder/>}/><Route path="registrants" element={<Registrants/>}/><Route path="registrants/:id" element={<RegistrantDetail/>}/><Route path="payments" element={<Payments/>}/><Route path="*" element={<Navigate to="/admin/dashboard" replace/>}/></Routes></main>
       <footer className="px-8 py-5 text-[11px] text-slate-400">© 2026 LPK BYE · Bandung <span className="float-right hidden md:inline">Sistem administrasi pendaftaran</span></footer>
     </div>
   </div>;

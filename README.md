@@ -7,12 +7,14 @@ Versi mandiri berbasis React + Vite untuk deploy sebagai satu project di Vercel.
 - Landing page, poster, galeri, FAQ, dan daftar gelombang pelatihan.
 - Form pendaftaran dengan field dinamis dan unggah dokumen ke Google Drive.
 - Portal peserta dengan tautan privat untuk melihat status.
-- Admin: login, membuat gelombang, melihat data pendaftar, dan mengubah status.
+- Admin: login, membuat gelombang, melihat data pendaftar, mengubah status, dan memantau analitik website.
 - Notifikasi pendaftaran dan perubahan status melalui Fonnte.
 - Webhook bot Fonnte untuk cek `STATUS`, `PORTAL`, dan `PEMBAYARAN` peserta.
 - Widget AI n8n opsional melalui `VITE_N8N_CHAT_WEBHOOK_URL`.
 - Berkas formulir dan bukti pembayaran dapat disimpan ke Google Drive.
 - Form Builder, konten landing, galeri, FAQ, dan review pembayaran manual tersedia di dashboard admin.
+- Dashboard analitik merangkum pengunjung unik, tampilan halaman, sesi, pendaftar, halaman populer, sumber trafik, perangkat, serta jam kunjungan.
+- Identitas analitik dibuat acak lalu di-hash di server; alamat IP, isi formulir, query URL, dan user-agent lengkap tidak disimpan.
 - Tabel `batches`, `registrants`, `payments`, dan `content` menyimpan data utama di Supabase.
 - Perubahan Supabase masuk ke antrean mirror dan dikirim ulang ke Google Sheets bila sinkronisasi gagal.
 
@@ -30,7 +32,7 @@ Untuk migrasi dan aktivasi Supabase, ikuti [SUPABASE_MIGRATION.md](./SUPABASE_MI
 1. Buat project Google Cloud dan aktifkan **Google Sheets API**.
 2. Buat service account dan salin email serta private key. Bagikan spreadsheet ke email service account sebagai **Editor**.
 3. Buat spreadsheet kosong; salin ID dari URL, yaitu bagian antara `/d/` dan `/edit`.
-4. Sheet/tab `Batches`, `Registrants`, `Payments`, dan `Content` dibuat otomatis. Jangan mengubah urutan/nama kolom header.
+4. Sheet/tab `Batches`, `Registrants`, `Payments`, `Content`, dan `Site Analytics` dibuat otomatis. Jangan mengubah urutan/nama kolom header.
 5. Setelah migrasi, Sheets adalah mirror; Supabase tetap sumber data utama. Batasi akses spreadsheet karena berisi data peserta.
 
 Untuk unggah foto dan berkas, aktifkan juga **Google Drive API** pada project Cloud yang sama. Service account cocok untuk Google Workspace Shared Drive; untuk folder Drive pribadi Gmail, gunakan kredensial OAuth refresh token karena service account tidak memiliki kuota Drive pribadi.
@@ -82,10 +84,14 @@ cd C:\laragon\www\lpk-bye\lite
 npm run dev
 ```
 
-Perintah tersebut menjalankan API lokal pada port `5001` dan Vite pada port `5173`. Pastikan `.env` sudah diisi. API lokal membaca `.env` melalui `dotenv`; deployment Vercel tetap menggunakan Environment Variables Vercel.
+Perintah tersebut menjalankan API lokal pada port `5001` dan Vite pada port `5173`. Perubahan pada kode backend akan memulai ulang API secara otomatis. Pastikan `.env` sudah diisi. API lokal membaca `.env` melalui `dotenv`; deployment Vercel tetap menggunakan Environment Variables Vercel.
+
+Jalankan pengujian dengan `npm test`.
 
 ## Catatan operasional
 
 Saat `DATA_STORE=supabase`, halaman membaca dan menulis ke Supabase. Google Sheets menerima mirror melalui antrean setiap menit; jika Google gagal, perubahan tetap tersimpan di Supabase dan antrean akan mencoba lagi. Jangan mengubah data langsung di Sheets karena perubahan itu tidak kembali ke Supabase.
 
-Unggahan dibatasi 2,5 MB per berkas dan 3,5 MB per request karena batas ukuran request Vercel Functions. Berkas identitas dan bukti pembayaran bersifat privat di Drive; poster/logo/galeri dibuat dapat dilihat publik agar muncul di landing. Admin harus memiliki akses Drive ke folder untuk membuka dokumen.
+Jalankan migrasi `20261123000000_site_analytics.sql` setelah schema utama Supabase agar dashboard analitik dapat menyimpan kunjungan. Pendaftar baru dibandingkan dengan pengunjung unik secara agregat dan bukan atribusi pendaftaran per individu.
+
+Unggahan gambar dibatasi 5 MB per gambar; dokumen tetap dibatasi 2,5 MB per berkas. Berkas identitas dan bukti pembayaran bersifat privat di Drive; poster/logo/galeri dibuat dapat dilihat publik agar muncul di landing. Admin harus memiliki akses Drive ke folder untuk membuka dokumen.

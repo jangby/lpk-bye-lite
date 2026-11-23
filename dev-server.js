@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import analyticsHandler from './api/analytics.js';
 import publicHandler from './api/public.js';
 import adminHandler from './api/admin.js';
 import fonnteWebhookHandler from './api/fonnte-webhook.js';
@@ -7,7 +8,7 @@ import syncSheetsHandler from './api/sync-sheets.js';
 
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '8mb' }));
 
 function adapt(handler) {
   return (req, res) => {
@@ -34,6 +35,7 @@ function adapt(handler) {
 
 app.all('/api/public', adapt(publicHandler));
 app.all('/api/admin', adapt(adminHandler));
+app.all('/api/analytics', adapt(analyticsHandler));
 app.all('/api/fonnte-webhook', adapt(fonnteWebhookHandler));
 app.all('/api/sync-sheets', adapt(syncSheetsHandler));
 

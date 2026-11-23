@@ -5,6 +5,7 @@ import { parseJson } from '../lib/sheets.js';
 import { dataStore as sheets } from '../lib/store.js';
 import { uploadToDrive } from '../lib/drive.js';
 import { sendFonnte } from '../lib/fonnte.js';
+import { buildAnalyticsReport, createAnalyticsWindow } from '../lib/analytics.js';
 
 const normalizePhone = (value) => String(value || '').replace(/\D/g, '').replace(/^0/, '62');
 
@@ -90,6 +91,14 @@ export default async function handler(req, res) {
         total_payments_received: approvedPayments.reduce((sum, item) => sum + Number(item.amount_approved || 0), 0),
         pending_admin_notifications: registrants.filter((item) => item.notification_status === 'failed').length
       } });
+    }
+    if (req.method === 'GET' && req.query.action === 'analytics') {
+      const range = createAnalyticsWindow(req.query.days);
+      const [events, registrants] = await Promise.all([
+        sheets.listAnalyticsEvents(range.query_from, range.query_to),
+        sheets.listRegistrants()
+      ]);
+      return send(res, 200, { success: true, data: buildAnalyticsReport(events, registrants, range) });
     }
     if (req.method === 'GET' && req.query.action === 'batches') {
       const [batches, registrants] = await Promise.all([sheets.listBatches(), sheets.listRegistrants()]);

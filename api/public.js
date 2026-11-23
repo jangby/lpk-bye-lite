@@ -11,7 +11,7 @@ const code = () => `BYE-${new Date().getFullYear()}-${randomBytes(3).toString('h
 
 export default async function handler(req, res) {
   try {
-    if (req.method === 'POST' && Buffer.byteLength(JSON.stringify(req.body || {})) > 3.5 * 1024 * 1024) {
+    if (req.method === 'POST' && Buffer.byteLength(JSON.stringify(req.body || {})) > 8 * 1024 * 1024) {
       return send(res, 413, { success: false, message: 'Total ukuran unggahan terlalu besar. Kurangi ukuran atau jumlah berkas.' });
     }
     if (req.method === 'GET') {

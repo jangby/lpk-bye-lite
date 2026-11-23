@@ -4,7 +4,8 @@ import {
   ArrowLeft, CalendarDays, CheckCircle2, CircleDollarSign, Clock3, FileText,
   ShieldCheck, UploadCloud
 } from 'lucide-react';
-import { publicApi, submitPayment } from './api.js';
+import { getUploadSizeLimit, getUploadSizeMessage } from '../lib/upload.js';
+import { prepareUploadFile, publicApi, submitPayment } from './api.js';
 import { Logo } from './Landing.jsx';
 
 const statusLabels = {
@@ -80,21 +81,22 @@ export default function ParticipantPortal() {
   async function selectReceipt(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.size > 2.5 * 1024 * 1024) {
-      setPaymentError('Ukuran bukti maksimal 2,5 MB.');
+    if (file.size > getUploadSizeLimit(file)) {
+      setPaymentError(getUploadSizeMessage(file));
       event.target.value = '';
       setReceipt(null);
       return;
     }
     setPaymentError('');
     try {
+      const uploadFile = await prepareUploadFile(file);
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
         reader.onerror = () => reject(new Error('Bukti pembayaran gagal dibaca.'));
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(uploadFile);
       });
-      setReceipt({ name: file.name, mimeType: file.type || 'application/octet-stream', base64 });
+      setReceipt({ name: uploadFile.name, mimeType: uploadFile.type || 'application/octet-stream', base64 });
     } catch (readError) {
       setPaymentError(readError.message);
     }
@@ -208,7 +210,7 @@ function PortalContent({ data, paymentEnabled, amount, receipt, paymentError, pa
             <input required min="1" type="number" value={amount} onChange={(event) => onAmountChange(event.target.value)} className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm"/>
           </label>
           <label className="grid cursor-pointer gap-2 rounded-lg border border-dashed border-slate-300 p-4 text-xs font-semibold text-slate-600">
-            Bukti (JPG, PNG, atau PDF; maks. 2,5 MB)
+            Bukti gambar maks. 5 MB · PDF maks. 2,5 MB
             <input required type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" onChange={onReceiptChange} className="text-xs"/>
             {receipt && <span className="font-normal text-slate-500">Dipilih: {receipt.name}</span>}
           </label>

@@ -4,10 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n API,WEB -c blue,magenta \"node dev-server.js\" \"vite --host 127.0.0.1\"",
+    "dev": "concurrently -k -n API,WEB -c blue,magenta \"node --watch dev-server.js\" \"vite --host 127.0.0.1\"",
     "dev:web": "vite --host 127.0.0.1",
-    "dev:api": "node dev-server.js",
+    "dev:api": "node --watch dev-server.js",
     "migrate:sheets": "node scripts/migrate-sheets-to-supabase.js",
+    "test": "node --test",
     "build": "vite build",
     "preview": "vite preview"
   },

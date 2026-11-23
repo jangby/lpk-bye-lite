@@ -1,3 +1,8 @@
+import { getUploadSizeLimit, getUploadSizeMessage, isImageUpload } from '../lib/upload.js';
+
+// Keep Base64 image payloads within the serverless request limit.
+const MAX_INLINE_IMAGE_SIZE_BYTES = 2.5 * 1024 * 1024;
+
 async function request(path, options = {}) {
   let response;
   try {
@@ -44,6 +49,39 @@ function fileToBase64(file) {
   });
 }
 
+export async function prepareUploadFile(file) {
+  if (!isImageUpload(file) || file.size <= MAX_INLINE_IMAGE_SIZE_BYTES) return file;
+
+  const image = await createImageBitmap(file);
+  const canvas = document.createElement('canvas');
+  let scale = Math.min(1, 2560 / Math.max(image.width, image.height));
+  try {
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Gambar gagal diproses di browser ini.');
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const quality = Math.max(0.5, 0.9 - attempt * 0.1);
+      const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((result) => {
+          if (result) resolve(result);
+          else reject(new Error('Gambar gagal dikompres.'));
+        }, 'image/webp', quality);
+      });
+      if (blob.type !== 'image/webp') throw new Error('Kompresi WebP tidak didukung browser ini.');
+      if (blob.size <= MAX_INLINE_IMAGE_SIZE_BYTES) {
+        const name = file.name.replace(/\.[^.]+$/, '') || file.name;
+        return new File([blob], `${name}.webp`, { type: 'image/webp', lastModified: file.lastModified });
+      }
+      scale *= 0.85;
+    }
+  } finally {
+    image.close();
+  }
+  throw new Error('Gambar terlalu besar untuk diproses. Coba pilih gambar dengan resolusi lebih rendah.');
+}
+
 export async function registerParticipant(formData) {
   if (!(formData instanceof FormData)) {
     return register(formData);
@@ -58,13 +96,14 @@ export async function registerParticipant(formData) {
   };
   for (const [fieldName, file] of formData.entries()) {
     if (!(file instanceof File) || !file.name) continue;
-    if (file.size > 2.5 * 1024 * 1024) {
-      throw new Error('Ukuran berkas maksimal 2,5 MB.');
+    if (file.size > getUploadSizeLimit(file)) {
+      throw new Error(getUploadSizeMessage(file));
     }
+    const uploadFile = await prepareUploadFile(file);
     values.answers[fieldName] = {
-      name: file.name,
-      mimeType: file.type || 'application/octet-stream',
-      base64: await fileToBase64(file)
+      name: uploadFile.name,
+      mimeType: uploadFile.type || 'application/octet-stream',
+      base64: await fileToBase64(uploadFile)
     };
   }
   return register(values);
@@ -110,11 +149,14 @@ async function formDataValues(formData) {
   for (const [key, value] of formData.entries()) {
     if (value instanceof File) {
       if (!value.name) continue;
-      if (value.size > 2.5 * 1024 * 1024) throw new Error('Ukuran berkas maksimal 2,5 MB.');
+      if (value.size > getUploadSizeLimit(value)) {
+        throw new Error(getUploadSizeMessage(value));
+      }
+      const uploadFile = await prepareUploadFile(value);
       values[key === 'image' || key === 'logo' ? 'image_file' : key] = {
-        name: value.name,
-        mimeType: value.type || 'application/octet-stream',
-        base64: await fileToBase64(value)
+        name: uploadFile.name,
+        mimeType: uploadFile.type || 'application/octet-stream',
+        base64: await fileToBase64(uploadFile)
       };
     } else {
       values[key] = value;
@@ -193,6 +235,7 @@ export async function adminApi(path, options = {}) {
     return adminAction('login', { method, body: JSON.stringify(body) });
   }
   if (pathname === '/dashboard') return adminAction('dashboard');
+  if (pathname === '/analytics') return adminAction('analytics', { query: Object.fromEntries(url.searchParams.entries()) });
   if (pathname === '/batches') {
     if (method === 'GET') return adminAction('batches');
     return adminAction('batch', { method, body: JSON.stringify(body) });

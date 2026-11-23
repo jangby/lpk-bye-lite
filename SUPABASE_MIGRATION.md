@@ -7,6 +7,7 @@ Setelah migrasi, Supabase menjadi sumber data utama. Google Sheets hanya mirror 
 1. Buat project Supabase.
 2. Buka **SQL Editor** pada project tersebut.
 3. Jalankan isi file [migrasi SQL](./supabase/migrations/20261122000000_primary_store_and_sheet_outbox.sql).
+4. Jalankan [migrasi tabel analitik](./supabase/migrations/20261123000000_site_analytics.sql) agar pencatatan pengunjung dan dashboard analitik admin aktif. Migrasi ini tidak memerlukan impor data awal.
 
 Schema mencakup tabel bisnis, relasi registrasi/pembayaran, serta trigger yang menambahkan perubahan ke `sheet_sync_outbox` dalam transaksi yang sama.
 

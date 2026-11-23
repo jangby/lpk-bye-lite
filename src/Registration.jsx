@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ExternalLink, FileText, Info, Menu, MessageCircle, UploadCloud } from 'lucide-react';
+import { getUploadSizeLimit, getUploadSizeMessage } from '../lib/upload.js';
 import { publicApi, registerParticipant } from './api.js';
 import { Logo } from './Landing.jsx';
 
@@ -41,8 +42,8 @@ export default function Registration() {
     if (field.field_type === 'file') return <label className="mt-2 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center hover:border-wine-500">
       <input className="hidden" required={required && !files[field.field_name]} type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(e) => {
         const file = e.target.files?.[0];
-        if (file && file.size > 2.5 * 1024 * 1024) {
-          setError('Ukuran berkas maksimal 2,5 MB.');
+        if (file && file.size > getUploadSizeLimit(file)) {
+          setError(getUploadSizeMessage(file));
           e.target.value = '';
           setFiles((current) => {
             const next = { ...current };
@@ -54,7 +55,7 @@ export default function Registration() {
         setError('');
         if (file) setFiles((current) => ({ ...current, [field.field_name]: file }));
       }}/>
-      {files[field.field_name] ? <><FileText className="text-wine-600"/><span className="mt-2 max-w-[250px] truncate text-xs font-bold text-navy">{files[field.field_name].name}</span></> : <><UploadCloud className="text-slate-400"/><span className="mt-2 text-xs font-semibold text-wine-600">Pilih berkas atau tarik ke sini</span><span className="mt-1 text-[10px] text-slate-400">JPG, PNG, atau PDF maksimal 2,5 MB</span></>}
+      {files[field.field_name] ? <><FileText className="text-wine-600"/><span className="mt-2 max-w-[250px] truncate text-xs font-bold text-navy">{files[field.field_name].name}</span></> : <><UploadCloud className="text-slate-400"/><span className="mt-2 text-xs font-semibold text-wine-600">Pilih berkas atau tarik ke sini</span><span className="mt-1 text-[10px] text-slate-400">Gambar maks. 5 MB · PDF maks. 2,5 MB</span></>}
     </label>;
     return <input required={required} className={common} type={field.field_type === 'number' ? 'number' : field.field_type === 'email' ? 'email' : field.field_type === 'date' ? 'date' : 'text'} value={answers[field.field_name] || ''} onChange={(e) => updateAnswer(field, e.target.value)} placeholder={field.field_type === 'text' ? field.field_label : undefined}/>;
   }
